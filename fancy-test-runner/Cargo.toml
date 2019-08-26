@@ -1,0 +1,30 @@
+[package]
+name = "fancy-test-runner"
+version = "0.1.0"
+authors = ["Russell Mull <russell@auxon.io>"]
+edition = "2018"
+
+[dependencies]
+selfe-sys = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git" }
+sel4-start = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git", features = [ "panic_handler" ]  }
+selfe-arc = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git", default-features = false }
+ferros = { git = "ssh://git@github.com/auxoncorp/ferros.git", branch = "master" }
+fancy-test = { path = "../fancy-test" }
+typenum = "1.10"
+
+[dependencies.arrayvec]
+version = "0.4.10"
+default-features = false
+
+[build-dependencies]
+cargo-5730 = { path = "/home/mullr/devel/cargo-5730" }
+
+
+[real-build-dependencies]
+ferros-build = { git = "ssh://git@github.com/auxoncorp/ferros.git", branch = "master" }
+regex = "1"
+
+[[bin]]
+name="fancy-test-runner"
+test=false
+

@@ -1,0 +1,2 @@
+[workspace]
+members = ["fancy-test", "fancy-test-runner"]
