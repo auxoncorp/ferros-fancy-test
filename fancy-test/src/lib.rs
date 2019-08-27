@@ -6,8 +6,6 @@
 use ferros::*;
 use ferros::cap::*;
 use ferros::userland::*;
-use typenum::*;
-use core::cell::Cell;
 
 pub type TestName = arrayvec::ArrayString<[u8; 128]>;
 
@@ -91,10 +89,4 @@ pub fn runner(tests: &[&dyn Testable]) {
     }
 
     context.complete();
-
-    unsafe {
-        loop {
-            selfe_sys::seL4_Yield();
-        }
-    }
 }
