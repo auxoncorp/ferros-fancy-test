@@ -3,6 +3,8 @@
 #![reexport_test_harness_main = "test_main"]
 #![test_runner(crate::runner)]
 
+pub use fancy_test_macros::unit_test;
+
 use ferros::*;
 use ferros::cap::*;
 use ferros::userland::*;

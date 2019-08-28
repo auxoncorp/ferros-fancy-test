@@ -12,6 +12,7 @@ selfe-sys = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git" }
 selfe-runtime = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git", features = [ ]}
 ferros = { git = "ssh://git@github.com/auxoncorp/ferros.git", branch = "master" }
 typenum = "1.10"
+fancy-test-macros = { path = "../fancy-test-macros" }
 
 [dependencies.arrayvec]
 version = "0.4.10"
