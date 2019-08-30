@@ -17,9 +17,9 @@ version = "0.4.10"
 default-features = false
 
 [build-dependencies]
-cargo-5730 = { git = "https://github.com/auxoncorp/cargo-5730", branch = "reduce-dep-thrash" }
+cargo-5730 = "0.2"
 
-[real-build-dependencies]
+[workaround-build-dependencies]
 ferros-build = { git = "ssh://git@github.com/auxoncorp/ferros.git", branch = "master" }
 regex = "1"
 
