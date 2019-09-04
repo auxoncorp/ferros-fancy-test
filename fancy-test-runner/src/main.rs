@@ -66,6 +66,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let ut_for_scratch: LocalCap<Untyped<U12>> = ut;
         let sacrificial_page = ut_for_scratch.retype(slots).unwrap();
         let reserved_for_scratch = root_vspace.reserve(sacrificial_page).unwrap();
+        let mut scratch = reserved_for_scratch.as_scratch(&root_vspace).unwrap();
 
         let weak_slots: LocalCNodeSlots<op!(U1 << U14)> = slots;
         let mut weak_slots = weak_slots.weaken();
@@ -131,7 +132,6 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         // TODO fix selfe so we can get this directly from the dir entry
         let elf_data = archive.file(dir_entry.name().unwrap()).unwrap();
 
-        let mut scratch = reserved_for_scratch.as_scratch(&mut root_vspace).unwrap();
         run_test_process(
             elf_data,
             // TODO re-use these, instead of burning resources
@@ -157,14 +157,14 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
 
 }
 
-fn run_test_process<'a, 'b, 'c>(
+fn run_test_process(
     elf_data: &[u8],
     uts: LocalCap<Untyped<U20>>,
     local_slots: LocalCNodeSlots<U2048>,
     test_asid: LocalCap<UnassignedASID>,
     root_cnode: &LocalCap<LocalCNode>,
     user_image: &UserImage<role::Local>,
-    mut scratch: &'a mut ScratchRegion<'b, 'c>,
+    mut scratch: &mut ScratchRegion,
     stack_mem: MappedMemoryRegion<U18, shared_status::Exclusive>,
     priority_authority: &LocalCap<ThreadPriorityAuthority>,
 ) -> Result<(), TopLevelError> {
@@ -187,7 +187,7 @@ fn run_test_process<'a, 'b, 'c>(
             elf_writable_mem.weaken(),
             &user_image,
             &root_cnode,
-            &mut scratch,
+            scratch,
         )
         .unwrap();
 
