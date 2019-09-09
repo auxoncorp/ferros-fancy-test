@@ -25,8 +25,7 @@ fn main() {
 }
 
 fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelError> {
-    let raw_bootinfo = unsafe { &*sel4_start::BOOTINFO };
-    let (allocator, mut dev_allocator) = micro_alloc::bootstrap_allocators(&raw_bootinfo).unwrap();
+    let (allocator, mut _dev_allocator) = micro_alloc::bootstrap_allocators(&raw_bootinfo).unwrap();
     let mut allocator = WUTBuddy::from(allocator);
 
     let archive_slice: &[u8] = unsafe {
@@ -105,7 +104,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
     test_asids.push(a);
     let (a, asid_pool) = asid_pool.alloc();
     test_asids.push(a);
-    let (a, asid_pool) = asid_pool.alloc();
+    let (a, _asid_pool) = asid_pool.alloc();
     test_asids.push(a);
 
     ///////////////////////////
@@ -146,7 +145,6 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         )?;
     }
 
-
     debug_println!("[Test Runner] All tests complete");
 
     unsafe {
@@ -154,7 +152,6 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
             selfe_sys::seL4_Yield();
         }
     }
-
 }
 
 fn run_test_process(
@@ -164,11 +161,10 @@ fn run_test_process(
     test_asid: LocalCap<UnassignedASID>,
     root_cnode: &LocalCap<LocalCNode>,
     user_image: &UserImage<role::Local>,
-    mut scratch: &mut ScratchRegion,
+    scratch: &mut ScratchRegion,
     stack_mem: MappedMemoryRegion<U18, shared_status::Exclusive>,
     priority_authority: &LocalCap<ThreadPriorityAuthority>,
 ) -> Result<(), TopLevelError> {
-
     let uts = alloc::ut_buddy(uts);
     smart_alloc!(|slots: local_slots, ut: uts| {
         let vspace_slots: LocalCNodeSlots<U16> = slots;
