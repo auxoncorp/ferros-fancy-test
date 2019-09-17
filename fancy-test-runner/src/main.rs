@@ -67,7 +67,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let reserved_for_scratch = root_vspace.reserve(sacrificial_page).unwrap();
         let mut scratch = reserved_for_scratch.as_scratch(&root_vspace).unwrap();
 
-        let weak_slots: LocalCNodeSlots<op!(U1 << U14)> = slots;
+        let weak_slots: LocalCNodeSlots<op!(U1 << U16)> = slots;
         let mut weak_slots = weak_slots.weaken();
     });
 
