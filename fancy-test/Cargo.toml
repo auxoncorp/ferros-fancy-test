@@ -13,7 +13,7 @@ selfe-runtime = { git = "ssh://git@github.com/auxoncorp/selfe-sys.git", features
 ferros = { git = "ssh://git@github.com/auxoncorp/ferros.git", branch = "master" }
 typenum = "1.10"
 fancy-test-macros = { path = "../fancy-test-macros" }
-proptest = { version = "0.9.4", default-features = false, features=["alloc"] }
+proptest = { git = "ssh://git@github.com/auxoncorp/proptest.git", branch="nostd-sugar-macros", default-features = false, features=["alloc"] }
 wee_alloc = { version = "0.4",  features = ["static_array_backend"] }
 
 [dependencies.arrayvec]
