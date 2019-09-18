@@ -1,7 +1,15 @@
 #![no_std]
-#![feature(custom_test_frameworks, start, lang_items, core_intrinsics)]
+#![feature(custom_test_frameworks, start, lang_items, core_intrinsics, alloc_error_handler)]
 #![reexport_test_harness_main = "test_main"]
 #![test_runner(crate::runner)]
+
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+#[alloc_error_handler]
+fn alloc_error(_: core::alloc::Layout) -> ! {
+    panic!("Alloc error")
+}
 
 pub use fancy_test_macros::unit_test;
 
