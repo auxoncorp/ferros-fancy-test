@@ -13,6 +13,7 @@ use ferros::vspace::*;
 use ferros::*;
 use selfe_arc;
 use typenum::*;
+use typenum::operator_aliases::*;
 
 extern "C" {
     static _selfe_arc_data_start: u8;
@@ -67,7 +68,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let reserved_for_scratch = root_vspace.reserve(sacrificial_page).unwrap();
         let mut scratch = reserved_for_scratch.as_scratch(&root_vspace).unwrap();
 
-        let weak_slots: LocalCNodeSlots<op!(U1 << U14)> = slots;
+        let weak_slots: LocalCNodeSlots<op!(U1 << U17)> = slots;
         let mut weak_slots = weak_slots.weaken();
     });
 
@@ -119,8 +120,8 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let test_asid = test_asids.pop().unwrap();
 
         let stack_mem: UnmappedMemoryRegion<U18, _> = UnmappedMemoryRegion::new(
-            allocator.alloc_strong(&mut weak_slots)?,
-            weak_slots.alloc_strong()?,
+            allocator.alloc_strong(&mut weak_slots).expect("Allocate stack mem"),
+            weak_slots.alloc_strong().expect("Allocate stack slots"),
         )
         .unwrap();
 
@@ -134,15 +135,16 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         run_test_process(
             elf_data,
             // TODO re-use these, instead of burning resources
-            allocator.alloc_strong(&mut weak_slots)?,
-            weak_slots.alloc_strong()?,
+            allocator.alloc_strong(&mut weak_slots).expect("Allocate elf misc uts"),
+            allocator.alloc_strong(&mut weak_slots).expect("Allocate elf writable mem"),
+            weak_slots.alloc_strong().expect("Allocate elf slots"),
             test_asid,
             &root_cnode,
             &user_image,
             &mut scratch,
             stack_mem,
             &tpa,
-        )?;
+        ).expect("run_test_process");
     }
 
     debug_println!("[Test Runner] All tests complete");
@@ -156,7 +158,8 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
 
 fn run_test_process(
     elf_data: &[u8],
-    uts: LocalCap<Untyped<U20>>,
+    uts: LocalCap<Untyped<U18>>,
+    elf_writable_mem: LocalCap<Untyped<U21>>,
     local_slots: LocalCNodeSlots<U2048>,
     test_asid: LocalCap<UnassignedASID>,
     root_cnode: &LocalCap<LocalCNode>,
@@ -169,12 +172,10 @@ fn run_test_process(
     smart_alloc!(|slots: local_slots, ut: uts| {
         let vspace_slots: LocalCNodeSlots<U16> = slots;
         let vspace_ut: LocalCap<Untyped<U16>> = ut;
-
         let page_slots: LocalCNodeSlots<U1024> = slots;
-        let elf_writable_mem: LocalCap<Untyped<U18>> = ut;
 
         let mut test_vspace = VSpace::new_from_elf_weak(
-            retype(ut, slots).unwrap(), // paging_root
+            retype(ut, slots).expect("Retype paging root"), // paging_root
             test_asid,
             vspace_slots.weaken(), // slots
             vspace_ut.weaken(),    // paging_untyped
@@ -185,7 +186,7 @@ fn run_test_process(
             &root_cnode,
             scratch,
         )
-        .unwrap();
+        .expect("Create test vspace");
 
         let (test_cnode, test_slots) = retype_cnode::<U12>(ut, slots).unwrap();
         let (test_fault_source_slot, _test_slots) = test_slots.alloc();
@@ -197,7 +198,7 @@ fn run_test_process(
                 slots,
                 test_fault_source_slot,
                 slots,
-            )?;
+            ).expect("Create test control channel");
 
         let params = fancy_test::TestContext {
             x: 42,
@@ -224,7 +225,7 @@ fn run_test_process(
 
     let mut current_test: Option<fancy_test::TestName> = None;
     loop {
-        match fault_or_event_handler.await_message()? {
+        match fault_or_event_handler.await_message().expect("Wait for test proc message") {
             FaultOrMessage::Fault(_) => {
                 debug_println!(
                     "\n[Test Runner] Test process faulted; last running test was '{}'",
