@@ -68,7 +68,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let reserved_for_scratch = root_vspace.reserve(sacrificial_page).unwrap();
         let mut scratch = reserved_for_scratch.as_scratch(&root_vspace).unwrap();
 
-        let weak_slots: LocalCNodeSlots<op!(U1 << U17)> = slots;
+        let weak_slots: LocalCNodeSlots<op!(U1 << U18)> = slots;
         let mut weak_slots = weak_slots.weaken();
     });
 
@@ -158,9 +158,9 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
 
 fn run_test_process(
     elf_data: &[u8],
-    uts: LocalCap<Untyped<U18>>,
+    uts: LocalCap<Untyped<U19>>,
     elf_writable_mem: LocalCap<Untyped<U21>>,
-    local_slots: LocalCNodeSlots<U2048>,
+    local_slots: LocalCNodeSlots<U4096>,
     test_asid: LocalCap<UnassignedASID>,
     root_cnode: &LocalCap<LocalCNode>,
     user_image: &UserImage<role::Local>,
@@ -170,9 +170,9 @@ fn run_test_process(
 ) -> Result<(), TopLevelError> {
     let uts = alloc::ut_buddy(uts);
     smart_alloc!(|slots: local_slots, ut: uts| {
-        let vspace_slots: LocalCNodeSlots<U16> = slots;
-        let vspace_ut: LocalCap<Untyped<U16>> = ut;
-        let page_slots: LocalCNodeSlots<U1024> = slots;
+        let vspace_slots: LocalCNodeSlots<U32> = slots;
+        let vspace_ut: LocalCap<Untyped<U18>> = ut;
+        let page_slots: LocalCNodeSlots<U2048> = slots;
 
         let mut test_vspace = VSpace::new_from_elf_weak(
             retype(ut, slots).expect("Retype paging root"), // paging_root
