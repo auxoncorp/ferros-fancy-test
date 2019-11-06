@@ -119,7 +119,7 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
 
         let test_asid = test_asids.pop().unwrap();
 
-        let stack_mem: UnmappedMemoryRegion<U18, _> = UnmappedMemoryRegion::new(
+        let stack_mem: UnmappedMemoryRegion<U20, _> = UnmappedMemoryRegion::new(
             allocator.alloc_strong(&mut weak_slots).expect("Allocate stack mem"),
             weak_slots.alloc_strong().expect("Allocate stack slots"),
         )
@@ -165,7 +165,7 @@ fn run_test_process(
     root_cnode: &LocalCap<LocalCNode>,
     user_image: &UserImage<role::Local>,
     scratch: &mut ScratchRegion,
-    stack_mem: MappedMemoryRegion<U18, shared_status::Exclusive>,
+    stack_mem: MappedMemoryRegion<U20, shared_status::Exclusive>,
     priority_authority: &LocalCap<ThreadPriorityAuthority>,
 ) -> Result<(), TopLevelError> {
     let uts = alloc::ut_buddy(uts);
