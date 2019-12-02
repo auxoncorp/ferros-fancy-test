@@ -12,8 +12,8 @@ use ferros::userland::*;
 use ferros::vspace::*;
 use ferros::*;
 use selfe_arc;
-use typenum::*;
 use typenum::operator_aliases::*;
+use typenum::*;
 
 extern "C" {
     static _selfe_arc_data_start: u8;
@@ -120,7 +120,9 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         let test_asid = test_asids.pop().unwrap();
 
         let stack_mem: UnmappedMemoryRegion<U20, _> = UnmappedMemoryRegion::new(
-            allocator.alloc_strong(&mut weak_slots).expect("Allocate stack mem"),
+            allocator
+                .alloc_strong(&mut weak_slots)
+                .expect("Allocate stack mem"),
             weak_slots.alloc_strong().expect("Allocate stack slots"),
         )
         .unwrap();
@@ -135,8 +137,12 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
         run_test_process(
             elf_data,
             // TODO re-use these, instead of burning resources
-            allocator.alloc_strong(&mut weak_slots).expect("Allocate elf misc uts"),
-            allocator.alloc_strong(&mut weak_slots).expect("Allocate elf writable mem"),
+            allocator
+                .alloc_strong(&mut weak_slots)
+                .expect("Allocate elf misc uts"),
+            allocator
+                .alloc_strong(&mut weak_slots)
+                .expect("Allocate elf writable mem"),
             weak_slots.alloc_strong().expect("Allocate elf slots"),
             test_asid,
             &root_cnode,
@@ -144,7 +150,8 @@ fn run(raw_bootinfo: &'static selfe_sys::seL4_BootInfo) -> Result<(), TopLevelEr
             &mut scratch,
             stack_mem,
             &tpa,
-        ).expect("run_test_process");
+        )
+        .expect("run_test_process");
     }
 
     debug_println!("[Test Runner] All tests complete");
@@ -198,14 +205,15 @@ fn run_test_process(
                 slots,
                 test_fault_source_slot,
                 slots,
-            ).expect("Create test control channel");
+            )
+            .expect("Create test control channel");
 
         let params = fancy_test::TestContext {
             x: 42,
             test_event_sender,
         };
 
-        let test_process = StandardProcess::new::<fancy_test::TestContext<_>, _>(
+        let mut test_process = StandardProcess::new::<fancy_test::TestContext<_>, _>(
             &mut test_vspace,
             test_cnode,
             stack_mem,
@@ -225,7 +233,10 @@ fn run_test_process(
 
     let mut current_test: Option<fancy_test::TestName> = None;
     loop {
-        match fault_or_event_handler.await_message().expect("Wait for test proc message") {
+        match fault_or_event_handler
+            .await_message()
+            .expect("Wait for test proc message")
+        {
             FaultOrMessage::Fault(_) => {
                 debug_println!(
                     "\n[Test Runner] Test process faulted; last running test was '{}'",
